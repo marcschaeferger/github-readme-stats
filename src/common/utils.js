@@ -13,20 +13,40 @@ import { themes } from "../../themes/index.js";
  */
 export function sanitizeColor(color) {
   if (typeof color !== "string") return "#2f80ed"; // fallback default
-  // Hex color: #RGB, #RRGGBB, #RRGGBBAA
-  if (/^#([0-9a-fA-F]{3}){1,2}([0-9a-fA-F]{2})?$/.test(color.trim())) {
-    return color.trim();
+  const trimmed = color.trim();
+  // Only allow exact hex codes: #RGB, #RRGGBB, #RRGGBBAA
+  if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(trimmed)) {
+    return trimmed;
   }
-  // rgb() or rgba() values
-  if (/^rgba?\((\d{1,3},\s*){2,3}\d{1,3}\)$/.test(color.trim())) {
-    return color.trim();
+  // Only allow rgb()/rgba() with numeric values 0-255 and no percentages
+  if (/^rgb\((\s*\d{1,3}\s*,){2}\s*\d{1,3}\s*\)$/.test(trimmed)) {
+    // Verify each number is in 0-255
+    const rgbParts = trimmed
+      .slice(4, -1)
+      .split(",")
+      .map(x => parseInt(x.trim(), 10));
+    if (rgbParts.every(v => v >= 0 && v <= 255)) {
+      return trimmed.replace(/\s+/g, "");
+    }
   }
-  // Safe CSS color names (basic whitelist)
+  if (/^rgba\((\s*\d{1,3}\s*,){3}\s*(0|1|0?\.\d+)\s*\)$/.test(trimmed)) {
+    const matches = trimmed.match(/^rgba\(([^)]+)\)$/);
+    if (matches) {
+      const parts = matches[1].split(",").map(x => x.trim());
+      const rgb = parts.slice(0, 3).map(x => parseInt(x, 10));
+      const alpha = parseFloat(parts[3]);
+      if (rgb.every(v => v >= 0 && v <= 255) && alpha >= 0 && alpha <= 1) {
+        return `rgba(${rgb.join(",")},${alpha})`;
+      }
+    }
+  }
+  // Safe CSS color names (strict whitelist, normalized)
   const cssColorNames = [
     "black", "white", "red", "green", "blue", "yellow", "violet", "gray", "grey", "orange", "purple", "pink", "brown", "aqua", "beige", "coral", "cyan", "gold", "ivory", "lime", "magenta", "maroon", "navy", "olive", "silver", "teal"
   ];
-  if (cssColorNames.includes(color.trim().toLowerCase())) {
-    return color.trim().toLowerCase();
+  const lowered = trimmed.toLowerCase();
+  if (cssColorNames.includes(lowered)) {
+    return lowered;
   }
   // Default fallback
   return "#2f80ed";
