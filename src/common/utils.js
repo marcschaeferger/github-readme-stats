@@ -4,8 +4,35 @@ import toEmoji from "emoji-name-map";
 import wrap from "word-wrap";
 import { themes } from "../../themes/index.js";
 
-const TRY_AGAIN_LATER = "Please try again later";
 
+/**
+ * Sanitizes a color value to prevent XSS. Allows #RRGGBB[AA], #RGB, rgb(), rgba(), or safe named CSS colors.
+ * Returns a safe default if input is invalid.
+ * @param {string} color - The user-provided color string.
+ * @returns {string} The sanitized color value.
+ */
+export function sanitizeColor(color) {
+  if (typeof color !== "string") return "#2f80ed"; // fallback default
+  // Hex color: #RGB, #RRGGBB, #RRGGBBAA
+  if (/^#([0-9a-fA-F]{3}){1,2}([0-9a-fA-F]{2})?$/.test(color.trim())) {
+    return color.trim();
+  }
+  // rgb() or rgba() values
+  if (/^rgba?\((\d{1,3},\s*){2,3}\d{1,3}\)$/.test(color.trim())) {
+    return color.trim();
+  }
+  // Safe CSS color names (basic whitelist)
+  const cssColorNames = [
+    "black", "white", "red", "green", "blue", "yellow", "violet", "gray", "grey", "orange", "purple", "pink", "brown", "aqua", "beige", "coral", "cyan", "gold", "ivory", "lime", "magenta", "maroon", "navy", "olive", "silver", "teal"
+  ];
+  if (cssColorNames.includes(color.trim().toLowerCase())) {
+    return color.trim().toLowerCase();
+  }
+  // Default fallback
+  return "#2f80ed";
+}
+
+const TRY_AGAIN_LATER = "Please try again later";
 const SECONDARY_ERROR_MESSAGES = {
   MAX_RETRY:
     "You can deploy own instance or wait until public will be no longer limited",

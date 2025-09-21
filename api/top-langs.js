@@ -7,6 +7,7 @@ import {
   parseArray,
   parseBoolean,
   renderError,
+  sanitizeColor,
 } from "../src/common/utils.js";
 import { fetchTopLanguages } from "../src/fetchers/top-languages.js";
 import { isLocaleAvailable } from "../src/translations.js";
@@ -36,6 +37,13 @@ export default async (req, res) => {
     hide_progress,
     stats_format,
   } = req.query;
+
+  // Sanitize color values from user input
+  const safe_title_color = sanitizeColor(title_color);
+  const safe_text_color = sanitizeColor(text_color);
+  const safe_bg_color = sanitizeColor(bg_color);
+  const safe_border_color = sanitizeColor(border_color);
+
   res.setHeader("Content-Type", "image/svg+xml");
 
   if (whitelist && !whitelist.includes(username)) {
@@ -44,10 +52,10 @@ export default async (req, res) => {
         "This username is not whitelisted",
         "Please deploy your own instance",
         {
-          title_color,
-          text_color,
-          bg_color,
-          border_color,
+          title_color: safe_title_color,
+          text_color: safe_text_color,
+          bg_color: safe_bg_color,
+          border_color: safe_border_color,
           theme,
           show_repo_link: false,
         },
@@ -61,10 +69,10 @@ export default async (req, res) => {
         "This username is blacklisted",
         "Please deploy your own instance",
         {
-          title_color,
-          text_color,
-          bg_color,
-          border_color,
+          title_color: safe_title_color,
+          text_color: safe_text_color,
+          bg_color: safe_bg_color,
+          border_color: safe_border_color,
           theme,
           show_repo_link: false,
         },
@@ -125,14 +133,14 @@ export default async (req, res) => {
         hide_border: parseBoolean(hide_border),
         card_width: parseInt(card_width, 10),
         hide: parseArray(hide),
-        title_color,
-        text_color,
-        bg_color,
+        title_color: safe_title_color,
+        text_color: safe_text_color,
+        bg_color: safe_bg_color,
         theme,
         layout,
         langs_count,
         border_radius,
-        border_color,
+        border_color: safe_border_color,
         locale: locale ? locale.toLowerCase() : null,
         disable_animations: parseBoolean(disable_animations),
         hide_progress: parseBoolean(hide_progress),
@@ -148,10 +156,10 @@ export default async (req, res) => {
     ); // Use lower cache period for errors.
     return res.send(
       renderError(err.message, err.secondaryMessage, {
-        title_color,
-        text_color,
-        bg_color,
-        border_color,
+        title_color: safe_title_color,
+        text_color: safe_text_color,
+        bg_color: safe_bg_color,
+        border_color: safe_border_color,
         theme,
       }),
     );
