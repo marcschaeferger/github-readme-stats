@@ -1,5 +1,6 @@
 // @ts-check
 import { Card } from "../common/Card.js";
+import { encodeHTML } from "../common/utils.js";
 import { createProgressNode } from "../common/createProgressNode.js";
 import { I18n } from "../common/I18n.js";
 import {
@@ -876,7 +877,7 @@ const renderTopLanguages = (topLangs, options = {}) => {
   }
 
   const card = new Card({
-    customTitle: custom_title,
+    customTitle: custom_title ? encodeHTML(custom_title) : undefined,
     defaultTitle: i18n.t("langcard.title"),
     width,
     height,
