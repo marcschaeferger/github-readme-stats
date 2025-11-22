@@ -116,10 +116,10 @@ export default async (req, res) => {
     ); // Use lower cache period for errors.
     return res.send(
       renderError(err.message, err.secondaryMessage, {
-        title_color,
-        text_color,
-        bg_color,
-        border_color,
+        title_color: sanitizeColor(title_color),
+        text_color: sanitizeColor(text_color),
+        bg_color: sanitizeColor(bg_color),
+        border_color: sanitizeColor(border_color),
         theme,
       }),
     );
